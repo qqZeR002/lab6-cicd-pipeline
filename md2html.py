@@ -9,7 +9,7 @@
 import html
 import re
 
-HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
+HEADING_RE = re.compile(r"^(#{1,7})\s+(.+)$")
 UL_RE = re.compile(r"^[-*]\s+(.+)$")
 OL_RE = re.compile(r"^\d+\.\s+(.+)$")
 INLINE_CODE_RE = re.compile(r"`([^`]+)`")
