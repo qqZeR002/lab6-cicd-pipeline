@@ -1,0 +1,55 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # CI: тесты запускаются на каждый push и каждый Pull Request
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Установка зависимостей
+        run: pip install -r requirements.txt
+      - name: Тесты
+        run: pytest -v
+
+  # сборка сайта: только если тесты прошли
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Конвертация заметок в HTML
+        run: python build.py
+      - name: Сохранить сайт как артефакт
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  # CD: публикация на GitHub Pages, только с ветки main
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Публикация на Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
